@@ -1,4 +1,6 @@
-require "neography"
+require "neography" unless defined?(Neography)
+require "neo4j-core" unless defined?(Neo4j)
+
 Neography.configure do |config|
   config.protocol           = "http://"
   config.server             = "localhost"
@@ -15,3 +17,6 @@ Neography.configure do |config|
   config.password           = nil
   config.parser             = MultiJsonParser
 end
+
+
+NEO_DB = Neo4j::Session.open(:server_db, "http://localhost:7474")

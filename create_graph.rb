@@ -4,9 +4,11 @@ require "./question"
 require "./answer"
 require "pp"
 
+def neo_obj
+ @neo ||= Neography::Rest.new
+end
 
-neo = Neography::Rest.new
- neo.execute_query(
+ neo_obj.execute_query(
    "MATCH (n)
  OPTIONAL MATCH (n)-[r]-()
  DELETE n,r")
@@ -40,10 +42,11 @@ def create_answers(questions, survey_id)
 end
 
 
-def awesome_survey(neo)
+def awesome_survey
   surveys = [Survey.new("supply", "Supply Survey", "A survey about supplies")]
   survey = surveys.first
   start_node = Neography::Node.create("id" => survey.id, "title" => survey.title, "description" => survey.description)
+  neo_obj.add_label(start_node, "start_node")
 
   survey_id = "supply"
 
@@ -72,12 +75,12 @@ def awesome_survey(neo)
 
   # Creates the 'first' relationship for the 'start'
 
-  if start_node.outgoing(:first).size == 0
+  if start_node.outgoing(:first_question).size == 0
     first_question = Neography::Node.find("survey_index", survey_id, q1.id)
-    Neography::Relationship.create(:first, start_node, first_question)
+    Neography::Relationship.create(:first_question, start_node, first_question)
   end
 
   
 end
 
-awesome_survey(neo)
+awesome_survey
