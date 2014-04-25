@@ -35,7 +35,7 @@ def create_answers(questions, survey_id)
       Neography::Relationship.create(:answer, question_node, answer_node)
       if answer.next
         next_question = Neography::Node.find("survey_index", survey_id, answer.next)
-        Neography::Relationship.create(:next, question_node, next_question)
+        Neography::Relationship.create(:next, answer_node, next_question)
       end
     end
   end
@@ -50,7 +50,7 @@ def awesome_survey
 
   survey_id = "supply"
 
-  q1_answers = [Answer.new('q1a1','yes','q2'), Answer.new('q1a2','no')]
+  q1_answers = [Answer.new('q1a1','yes','q2'), Answer.new('q1a2','no','q2')]
 
   #predicates = [ PredicateEligibleHeadgear.new(q2, q3) ]
   #q2 = Question.new('q2','Do you need a new headgear?', predicates)

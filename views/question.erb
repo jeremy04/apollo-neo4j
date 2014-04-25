@@ -1,0 +1,11 @@
+HEY GIRL I'm going to ask you some questions.
+
+<form method ="post">
+<BR />
+<%= @first_question[:text] %>
+<BR />
+<% @answers.each do |answer| %>
+ <input type="radio" name= "<%= @first_question[:id] %>" value = "<%= answer %>"> <%= answer %> <BR />
+<% end %>
+<input type="submit" value = "next">
+</form>

@@ -1,12 +1,13 @@
 GIT
   remote: git://github.com/andreasronge/neo4j-core
-  revision: 968ef89bd49bd341558bf85cce0e30115c7a92e1
-  tag: v3.0.0.alpha.1
+  revision: 2717f215d868e93a6d01e5a85b751158b35cacb6
+  tag: v3.0.0.alpha.10
   specs:
-    neo4j-core (3.0.0.alpha.1)
+    neo4j-core (3.0.0.alpha.10)
       httparty
       json
       neo4j-cypher
+      os
 
 GEM
   remote: https://rubygems.org/
@@ -36,7 +37,7 @@ GEM
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
-    rake (10.2.2)
+    rake (10.3.1)
     rubyzip (1.1.3)
     sinatra (1.4.5)
       rack (~> 1.4)
