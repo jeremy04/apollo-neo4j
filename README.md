@@ -2,12 +2,22 @@
 
 #### Requirements:
 
-Jave JDK 1.6 or greater
+- Java JDK 1.6 or greater
 
-Neo4j server
+- Neo4j server
+
+I personally installed it as a stand alone binary, go ahead and use brew if you'd like
+
+#### Dev setup
+
+Install and start neo4j server
 
 ```
 brew install neo4j && neo4j start
+```
+``` 
+cd ~/projects
+git clone git@github.com:jeremy04/apollo-neo4j.git
 ```
 
 ```
@@ -25,6 +35,12 @@ For simplicity, we want to create a supply survey in neo4j, this script will rem
 bundle exec ruby create_graph.rb
 ```
 
+
+#### View 'graph'
+
+http://localhost:7474/
+
+
 #### Generate a survey id
 
 To start a survey you need to 'generate' a uuid (simulating an email)
@@ -34,9 +50,14 @@ bundle exec ruby ./lib/create_session.rb
 ```
 
 Output should look like:
-Created node with '109015c85741f8716b2bca2e' label
 
-Take note of uuid
+```
+CypherNode 26829 (70324442930820)
+CypherNode 26813 (70324442942520)
+Created node with '109015c85741f8716b2bca2e' label
+```
+
+Copy '109015c85741f8716b2bca2e' to your clipboard
 
 
 #### Start sinatra
