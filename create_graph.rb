@@ -7,22 +7,23 @@ require "debugger"
 require "pp"
 
 def neo_obj
- @neo ||= Neography::Rest.new
+  NEO_DB
 end
 
- neo_obj.execute_query(
-   "MATCH (n)
+
+neo_obj.query("MATCH (n)
  OPTIONAL MATCH (n)-[r]-()
  DELETE n,r")
 
 
-def remap_questions(questions, current_questions, survey_id, start_node)
+def create_questions(questions, current_questions, survey_id, start_node)
+  question_label = Neo4j::Label.create(:question)
+  question_label.create_index(:id)
 
   questions.each do |question|
     if not current_questions.map { |q| q.id }.include?(question.id)
-      new_question = Neography::Node.create("id" => question.id, "text" => question.text)
-      Neography::Relationship.create(:question, start_node, new_question)
-      new_question.add_to_index("survey_index", survey_id, question.id)
+      new_question = Neo4j::Node.create({id: question.id, text: question.text}, :question )
+      Neo4j::Relationship.create(:question, start_node, new_question)
     end
   end
 
@@ -30,24 +31,27 @@ end
 
 
 def create_predicates(questions, survey_id)
+  predicate_label = Neo4j::Label.create(:predicate)
+  predicate_label.create_index(:id)
+
   questions.each do |question|
     if question.predicate # if not at the end of survey (last question has no predicate)
 
-      question_node = Neography::Node.find("survey_index", survey_id, question.id)
-      new_predicate_node = Neography::Node.create("id" => question.predicate.id)
-      Neography::Relationship.create(:predicate, question_node, new_predicate_node)
+      question_node = Neo4j::Label.query(:question, conditions: {id: question.id}).first
+      new_predicate_node = Neo4j::Node.create({id: question.predicate.id }, :predicate)
+      Neo4j::Relationship.create(:predicate, question_node, new_predicate_node)
 
       next_question_true = question.predicate.true_result # next question id
       next_question_false = question.predicate.false_result # next question id
 
       if next_question_true # if not at the end of survey
-        next_question_node = Neography::Node.find("survey_index", survey_id, next_question_true)
-        Neography::Relationship.create(:true, new_predicate_node, next_question_node)
+        next_question_node = Neo4j::Label.query(:question, conditions: {id: next_question_true}).first
+        Neo4j::Relationship.create(:true, new_predicate_node, next_question_node)
       end
 
       if next_question_false # if not at the end of survey
-        next_question_node = Neography::Node.find("survey_index", survey_id, next_question_false)
-        Neography::Relationship.create(:false, new_predicate_node, next_question_node)
+        next_question_node = Neo4j::Label.query(:question, conditions: {id: next_question_false}).first
+        Neo4j::Relationship.create(:false, new_predicate_node, next_question_node)
       end
 
     end
@@ -56,12 +60,16 @@ end
 
 
 def create_answers(questions, survey_id)
+  answer_label = Neo4j::Label.create(:predicate)
+  answer_label.create_index(:id)
+
   questions.each do |question|
     # create answers
-    question_node = Neography::Node.find("survey_index", survey_id, question.id)
+
+    question_node = Neo4j::Label.query(:question, conditions: {id: question.id}).first
     question.answers.each do |answer|
-      answer_node = Neography::Node.create("id" => answer.id, "text" => answer.text)
-      Neography::Relationship.create(:answer, question_node, answer_node)
+      answer_node = Neo4j::Node.create({ id: answer.id, text: answer.text}, :answer)
+      Neo4j::Relationship.create(:answer, question_node, answer_node)
     end
   end
 end
@@ -80,8 +88,7 @@ end
 def awesome_survey
   surveys = [Survey.new("supply", "Supply Survey", "A survey about supplies")]
   survey = surveys.first
-  start_node = Neography::Node.create("id" => survey.id, "title" => survey.title, "description" => survey.description)
-  neo_obj.add_label(start_node, "start_node")
+  start_node = Neo4j::Node.create({id: survey.id, title: survey.title, description: survey.description}, "start_node")
 
   survey_id = "supply"
   
@@ -98,20 +105,19 @@ def awesome_survey
   q4 = Question.new('order_confirm','Are you sure you will like to order supplies?', q4_answers) 
 
   questions = [q1, q2, q3, q4]
-  current_questions = start_node.outgoing(:question)
+
+  current_questions = start_node.nodes(dir: :outgoing, type: :question)
+
   question_mapping = Hash[questions.map { |q| [q.id, q] }]
 
   questions = build_predicates(question_mapping)
-  remap_questions(questions, current_questions, survey_id, start_node)
 
+  create_questions(questions, current_questions, survey_id, start_node)
   create_answers(questions, survey_id)
   create_predicates(questions, survey_id)
-  # Creates the 'first' relationship for the 'start'
 
-  if start_node.outgoing(:first_question).size == 0
-    first_question = Neography::Node.find("survey_index", survey_id, q1.id)
-    Neography::Relationship.create(:first_question, start_node, first_question)
-  end
+  first_question = Neo4j::Label.query(:question, conditions: {id: q1.id}).first
+  Neo4j::Relationship.create(:first_question, start_node, first_question)
   
 end
 
