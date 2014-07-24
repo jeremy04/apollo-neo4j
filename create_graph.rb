@@ -20,10 +20,16 @@ def create_questions(questions, current_questions, survey_id, start_node)
   question_label = Neo4j::Label.create(:question)
   question_label.create_index(:id)
 
-  questions.each do |question|
+  questions.each_with_index do |question, i|
     if not current_questions.map { |q| q.id }.include?(question.id)
       new_question = Neo4j::Node.create({id: question.id, text: question.text}, :question )
       Neo4j::Relationship.create(:question, start_node, new_question)
+      if i > 0
+        previous_question_id = questions[i-1].id
+        previous_question_node = Neo4j::Label.query(:question, conditions: {id: previous_question_id}).first
+        Neo4j::Relationship.create(:previous, new_question, previous_question_node)
+      end
+        Neo4j::Relationship.create(:question, start_node, new_question)
     end
   end
 
@@ -91,7 +97,8 @@ def awesome_survey
   start_node = Neo4j::Node.create({id: survey.id, title: survey.title, description: survey.description}, "start_node")
 
   survey_id = "supply"
-  
+
+
   q1_answers = [Answer.new('mask_yes','yes'), Answer.new('mask_no','no')]
   q1 = Question.new('new_mask','Do you need a new mask?', q1_answers)
 

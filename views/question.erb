@@ -2,10 +2,19 @@ HEY GIRL I'm going to ask you some questions.
 
 <form method ="post">
 <BR />
-<%= @first_question[:text] %>
+<%= @current_question[:text] %>
 <BR />
 <% @answers.each do |answer| %>
- <input type="radio" name= "<%= @first_question[:id] %>" value = "<%= answer %>"> <%= answer %> <BR />
+ <input type="radio" name= "<%= @current_question[:id] %>" value = "<%= answer %>"
+    <%= @survey_node.props.key?(@current_question[:id].to_sym) ? "checked" : "" %> > <%= answer %> <BR />
 <% end %>
-<input type="submit" value = "next">
+<input type="submit" value ="next">
 </form>
+
+<% if @has_previous_question %>
+    <form method="post">
+      <input type='hidden' name='previous' value='previous'>
+      <input type="submit" value="previous">
+    </form>
+<% end %>
+
