@@ -4,16 +4,20 @@
 
 - Java JDK 1.6 or greater
 
-- Neo4j server
+- Neo4j server version 2.1.8
 
 I personally installed it as a stand alone binary, go ahead and use brew if you'd like
 
 #### Dev setup
 
+
+
 Install and start neo4j server
 
 ```
-brew install neo4j && neo4j start
+brew tap artcom/neo4jversions
+brew install neo4j218
+neo4j-218 start
 ```
 ``` 
 cd ~/projects
